@@ -1,0 +1,22 @@
+name: Dockerfile Lint
+
+on:
+  push:
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/dockerfile-lint.yml'
+  pull_request:
+
+jobs:
+  hadolint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Lint Dockerfile with Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: error

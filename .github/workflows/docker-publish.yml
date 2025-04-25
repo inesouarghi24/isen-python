@@ -1,0 +1,22 @@
+name: Build & Push Docker Image
+
+on:
+  push:
+    branches: [feature/cicd-pipeline] 
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Connexion DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build de l'image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/isen-python:dev-${{ github.sha }} .
+
+      - name: Push vers DockerHub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/isen-python:dev-${{ github.sha }}

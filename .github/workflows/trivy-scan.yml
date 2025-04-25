@@ -1,0 +1,24 @@
+name: Trivy Container Vulnerability Scan
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Docker Image"]
+    types:
+      - completed
+
+jobs:
+  trivy-scan:
+    name: Scan Docker image with Trivy
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.49.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.49.1_Linux-64bit.deb
+
+      - name: Scan image with Trivy (HIGH/CRITICAL only)
+        run: |
+          trivy image --severity HIGH,CRITICAL ${{ secrets.DOCKERHUB_USERNAME }}/isen-python:dev-${{ github.sha }}
