@@ -9,6 +9,39 @@ from django.views.generic import CreateView, View, DetailView, UpdateView
 
 from .forms import ProfileForm, SignUpForm
 from .models import Profile
+from django.views.decorators.http import require_POST
+from django.shortcuts import redirect
+from django.http import JsonResponse
+import json
+
+
+
+
+def get_cart(request):
+    return request.session.setdefault('cart', [])
+
+@require_POST
+def add_to_cart(request):
+    if request.content_type == "application/json":
+        data = json.loads(request.body)
+    else:
+        data = request.POST
+
+    if not all(k in data for k in ['id', 'name', 'quantity']):
+        return JsonResponse({'error': 'Champs manquants'}, status=400)
+
+    cart = get_cart(request)
+    cart.append({
+        'id': int(data['id']),
+        'name': data['name'],
+        'quantity': int(data['quantity']),
+    })
+    request.session.modified = True
+
+    if request.content_type != "application/json":
+        return redirect('home')
+
+    return JsonResponse({'message': 'Ajouté au panier', 'cart': cart})
 
 @method_decorator(login_required, name='dispatch')
 class UpdatePasswordView(PasswordChangeView):

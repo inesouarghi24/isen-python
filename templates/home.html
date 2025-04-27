@@ -36,55 +36,41 @@
         {% for product in object_list %}
         <div class="col-md-6 col-lg-4 mb-5">
           <div class="portfolio-item mx-auto">
-            <div
-              class="
-                portfolio-item-caption
-                d-flex
-                align-items-center
-                justify-content-center
-                h-100
-                w-100
-              "
-            >
-              <div
-                class="portfolio-item-caption-content text-center text-white"
-              >
-                <i
-                  class="fas fa-info-circle fa-3x"
-                  data-toggle="modal"
-                  data-target="#portfolioModal{{product.id}}"
-                ></i>
+            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
+              <div class="portfolio-item-caption-content text-center text-white">
+                <i class="fas fa-info-circle fa-3x" data-toggle="modal" data-target="#portfolioModal{{product.id}}"></i>
                 <br />
                 {% if user.is_authenticated %}
-                <hr style="border: 2px solid white" />
-                {% if product.is_favourite %}
-                  <a
-                    onclick="markFavourite('{{product.id}}')"
-                    data="{{product.id}}"
-                    id="favBtn{{product.id}}" style="color:red;"
-                  >
-                {% endif %}
-                {% if not product.is_favourite %}
-                  <a
-                    onclick="markFavourite('{{product.id}}', false)"
-                    data="{{product.id}}"
-                    id="favBtn{{product.id}}"
-                  >
-                {% endif %}
-                  <i class="fas fa-heart fa-3x"></i>
-                </a>
+                  <hr style="border: 2px solid white" />
+                  {% if product.is_favourite %}
+                    <a onclick="markFavourite('{{product.id}}')" data="{{product.id}}" id="favBtn{{product.id}}" style="color:red;">
+                  {% else %}
+                    <a onclick="markFavourite('{{product.id}}', false)" data="{{product.id}}" id="favBtn{{product.id}}">
+                  {% endif %}
+                    <i class="fas fa-heart fa-3x"></i>
+                  </a>
                 {% endif %}
               </div>
             </div>
-            <h4 style="text-align: center; color: darkblue">
-              {{ product.name|title }}
-            </h4>
-            <img
-              class="img-fluid"
-              src="{% get_media_prefix %}{{product.image}}"
-              alt="{{ product.name }}"
-            />
+          
+            <h4 style="text-align: center; color: darkblue">{{ product.name|title }}</h4>
+            <img class="img-fluid" src="{% get_media_prefix %}{{product.image}}" alt="{{ product.name }}" />
             <h6 style="text-align: center">$ {{ product.price }}</h6>
+          </div>
+          
+          <!-- 👇 Bouton placé en dehors du .portfolio-item pour éviter le hover -->
+          <div class="text-center mt-2">
+            <form method="POST" action="/cart/add">
+              {% csrf_token %}
+              <input type="hidden" name="id" value="{{ product.id }}">
+              <input type="hidden" name="name" value="{{ product.name }}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="btn btn-outline-primary btn-sm">
+                Ajouter au panier 🛒
+              </button>
+            </form>
+          </div>
+          
           </div>
         </div>
         {% endfor %}
@@ -145,6 +131,46 @@
     </div>
   </div>
   {% endfor %}
+
+
+<!-- Section Panier -->
+<section class="page-section" id="cart">
+  <div class="container">
+    <div class="text-center">
+      <h2 class="page-section-heading text-secondary mb-0 d-inline-block">
+        🛒 Mon Panier
+      </h2>
+    </div>
+    <div class="divider-custom">
+      <div class="divider-custom-line"></div>
+      <div class="divider-custom-icon"><i class="fas fa-shopping-cart"></i></div>
+      <div class="divider-custom-line"></div>
+    </div>
+
+          <!-- panier en bas de la page simple -->
+
+    <div class="row justify-content-center">
+      {% if cart %}
+        <div class="col-md-8">
+          <ul class="list-group">
+            {% for item in cart %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ item.quantity }} × {{ item.name }}
+                <span class="badge badge-primary badge-pill">ID: {{ item.id }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <div class="col-md-8 text-center">
+          <p class="lead">Votre panier est vide.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+
   <section class="page-section bg-primary text-white mb-0" id="about">
     <div class="container">
       <!-- About Section Heading-->
