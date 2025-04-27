@@ -3,10 +3,13 @@ name: Cypress End-to-End Tests and Deploy
 on:
     push:
       branches:
-        - '*'
+        - main
+        - feature/add-to-cart  
     pull_request:
       branches:
-        - '*'
+        - main
+        - feature/add-to-cart  
+  
   
 
 jobs:
