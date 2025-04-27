@@ -1,14 +1,14 @@
 name: Cypress End-to-End Tests and Deploy
 
 on:
-    push:
-      branches:
-        - main
-        - feature/add-to-cart  
-    pull_request:
-      branches:
-        - main
-        - feature/add-to-cart  
+  push:
+    branches:
+      - main
+      - feature/add-to-cart  
+  pull_request:
+    branches:
+      - main
+      - feature/add-to-cart  
 
 jobs:
   cypress-run:
@@ -56,7 +56,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}  
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}  
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} 
 
       - name: Build and deploy to Cloud Run
         run: |
