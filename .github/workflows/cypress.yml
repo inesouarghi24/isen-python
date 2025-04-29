@@ -1,76 +1,67 @@
-name: Cypress End-to-End Tests and Deploy
+name: Cypress end to end Tests
 
 on:
   push:
-    branches:
-      - main
-      - feature/add-to-cart
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - feature/add-to-cart
+    branches: [main]
 
 jobs:
   cypress-run:
-    name: Run Cypress E2E Tests
     runs-on: ubuntu-latest
 
-    steps:
-      # Checkout le code source du repository
-      - name: Checkout code
-        uses: actions/checkout@v3
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-      # Installer Python
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
-      # Installer les dépendances Python
-      - name: Install Python dependencies
+      - name: Install system dependencies for Pillow
         run: |
-          pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y libjpeg-dev zlib1g-dev
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install django python-dotenv phonenumbers Pillow
 
-      # Exécuter le serveur Django
-      - name: Run Django server
+      - name: Run Django server in background
+        env:
+          SECRET_KEY: dummykey
         run: |
-          python3 manage.py migrate
-          nohup python3 manage.py runserver 0.0.0.0:8080 &
+          python manage.py migrate
+          nohup python manage.py runserver 0.0.0.0:8080 &
+
+      - name: Wait for server to be ready
+        run: |
           sleep 10
+          curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:8080/home
 
-      # Installer Cypress
-      - name: Install Cypress
-        run: |
-          npm install --save-dev cypress
+      - name: Install frontend dependencies
+        run: npm ci
 
       - name: Run Cypress tests
-        run: |
-          npx cypress run
-
-  deploy:
-    name: Deploy to Google Cloud Run
-    runs-on: ubuntu-latest
-    needs: cypress-run
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Google Cloud credentials
-        uses: google-github-actions/setup-gcloud@v0.2.1
+        uses: cypress-io/github-action@v5
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-      - name: Build and deploy to Cloud Run
-        run: |
-          # Construire l'image Docker
-          gcloud builds submit --tag gcr.io/$GCP_PROJECT_ID/my-app
-
-          # Déployer sur Cloud Run
-          gcloud run deploy my-app \
-            --image gcr.io/$GCP_PROJECT_ID/my-app \
-            --platform managed \
-            --region us-central1 \
-            --allow-unauthenticated
+          start: ''
+          wait-on: 'http://localhost:8080/home'
+          wait-on-timeout: 60
