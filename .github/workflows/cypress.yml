@@ -4,38 +4,43 @@ on:
   push:
     branches:
       - main
-      - feature/add-to-cart  
+      - feature/add-to-cart
   pull_request:
     branches:
       - main
-      - feature/add-to-cart  
+      - feature/add-to-cart
 
 jobs:
   cypress-run:
-    name: Run Cypress E2E Tests and Deploy to Cloud Run
+    name: Run Cypress E2E Tests
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout le code source du repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Installer Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # Installer les dépendances Python
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install django python-dotenv phonenumbers Pillow
 
+      # Exécuter le serveur Django
       - name: Run Django server
         run: |
           python3 manage.py migrate
           nohup python3 manage.py runserver 0.0.0.0:8080 &
           sleep 10
 
+      # Installer Cypress
       - name: Install Cypress
         run: |
           npm install --save-dev cypress
@@ -47,7 +52,7 @@ jobs:
   deploy:
     name: Deploy to Google Cloud Run
     runs-on: ubuntu-latest
-    needs: cypress-run  
+    needs: cypress-run
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -55,13 +60,15 @@ jobs:
       - name: Set up Google Cloud credentials
         uses: google-github-actions/setup-gcloud@v0.2.1
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }} 
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} 
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Build and deploy to Cloud Run
         run: |
+          # Construire l'image Docker
           gcloud builds submit --tag gcr.io/$GCP_PROJECT_ID/my-app
-          
+
+          # Déployer sur Cloud Run
           gcloud run deploy my-app \
             --image gcr.io/$GCP_PROJECT_ID/my-app \
             --platform managed \

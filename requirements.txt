@@ -8,7 +8,7 @@ django-phonenumber-field==5.2.0
 iniconfig==1.1.1
 packaging==21.0
 phonenumberslite==8.12.26
-Pillow
+Pillow==8.3.1  
 pluggy==0.13.1
 py==1.10.0
 pycodestyle==2.7.0
@@ -21,6 +21,7 @@ sqlparse==0.4.1
 toml==0.10.2
 locust==1.6.0
 selenium==3.141.0
-pylint
-pytest
+pylint==2.11.1  
+bandit==1.7.0  
+gunicorn
 

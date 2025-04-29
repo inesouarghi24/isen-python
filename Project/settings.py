@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myapp.settings")
+PORT = os.getenv("PORT", "8080")
+
 
 load_dotenv()
 
@@ -22,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
 SECRET_KEY = os.getenv('SECRET_KEY', 'fake-secret-key-for-ci')
 
 # SECURITY WARNING: don't run with debug turned on in production!
