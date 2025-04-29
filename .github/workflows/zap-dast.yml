@@ -1,0 +1,32 @@
+name: DAST Scan with OWASP ZAP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  zap-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build and run Django app with Docker
+        run: |
+          docker build -t django-app .
+          docker run -d -p 8080:8080 --name test-app django-app
+          sleep 10
+
+      - name: Run ZAP Baseline Scan
+        run: |
+          docker run -t ghcr.io/zaproxy/zap-baseline-report \
+            -t http://localhost:8080 \
+            -m 1 \
+            -r zap-report.html || true
+
+      - name: Upload ZAP HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-report
+          path: zap-report.html
