@@ -15,7 +15,7 @@ jobs:
       - name: Build and run Django app with Docker
         run: |
           docker build -t django-app .
-          docker run -d -p 8080:8080 --name test-app django-app
+          docker run -d -p 8080:8080 --name isen-python django-app
           sleep 10
 
       - name: Run ZAP Baseline Scan
