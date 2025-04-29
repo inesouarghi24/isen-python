@@ -24,4 +24,5 @@ selenium==3.141.0
 pylint==2.11.1  
 bandit==1.7.0  
 gunicorn
+wrapt>=1.15.0
 
